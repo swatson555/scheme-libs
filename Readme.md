@@ -8,4 +8,4 @@ A library for loading and storing BMP files.
 
 ## [gl-math](https://github.com/swatson555/gl-math)
 
-A small math library aimed at gamedev that provides 4x4 float matrix, vector, and quaternion operations. This fork implements the library as a standard R6RS scheme library.
+A small math library aimed at gamedev that provides 4x4 float matrix, vector, and quaternion operations.
