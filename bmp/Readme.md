@@ -12,7 +12,7 @@ The library provides a single record type `bmp`.
 	bmp-width
 	bmp-bytevector
 
-The record contains the values for the width and height of an image. It also contains a bytevector of pixel data stored in BRGA888 format.
+The record contains the values for the width and height of an image. It also contains a bytevector of pixel data stored in BRGA8888 format.
 
 	make-bmp-from-path
 	make-bmp-from-port
