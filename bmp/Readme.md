@@ -1,6 +1,6 @@
 # bmp
 
-A library for loading and storing bmp files.
+A library for loading and storing BMP files.
 
 ## Usage
 
