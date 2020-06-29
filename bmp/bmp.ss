@@ -49,7 +49,8 @@
 
 
   (define (make-bmp-from-path path)
-    (make-bmp-from-port (open-file-input-port path)))
+    (with-input-from-file path
+      (lambda () (make-bmp-from-port (current-input-port)))))
 
   (define (make-bmp-from-port port)
     ;;; Construct an bmp from a file port.
