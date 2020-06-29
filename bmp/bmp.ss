@@ -49,13 +49,13 @@
 
 
   (define (make-bmp-from-path path)
-    (let* ((port (open-file-input-port path))
-	   (bmp (make-bmp-from-port port)))
-      (close-port port)
-      bmp))
+    (define port (open-file-input-port path))
+    (define bmpr (make-bmp-from-port port))
+    (close-port port)
+    bmpr)
 
   (define (make-bmp-from-port port)
-    ;;; Construct an bmp from a file port.
+    ;;; Construct a bmp from a file port.
     ;;;
     ;; File port reader utilities.
     (define datum (make-bytevector 4))
@@ -70,8 +70,7 @@
       (bytevector-uint-ref datum 0 (endianness little) 2))
     (define (read-s16)
       (get-bytevector-n! port datum 0 2)
-      (bytevector-sint-ref
-       (get-bytevector-n! port datum 0 2) 0 (endianness little) 2))
+      (bytevector-sint-ref datum 0 (endianness little) 2))
     (define (read-u8)
       (get-bytevector-n! port datum 0 1)
       (bytevector-uint-ref datum 0 (endianness little) 1))
@@ -258,7 +257,71 @@
 
 
   (define (save-bmp-to-path bmp path)
-    (error 'BMP "unimplemented" save-bmp-to-path))
+    (define port (open-file-output-port path (file-options no-fail)))
+    (save-bmp-to-port bmp port)
+    (close-port port))
 
   (define (save-bmp-to-port bmp port)
-    (error 'BMP "unimplemented" save-bmp-to-port)))
+    ;;; Store a bmp to a file port.
+    ;;;
+    ;; File port writer utilities.
+    (define datum (make-bytevector 4))
+    (define (write-u32 value)
+      (bytevector-uint-set! datum 0 value (endianness little) 4)
+      (put-bytevector port datum 0 4))
+    (define (write-s32 value)
+      (bytevector-sint-set! datum 0 value (endianness little) 4)
+      (put-bytevector port datum 0 4))
+    (define (write-u16 value)
+      (bytevector-uint-set! datum 0 value (endianness little) 2)
+      (put-bytevector port datum 0 2))
+    (define (write-s16 value)
+      (bytevector-sint-set! datum 0 value (endianness little) 2)
+      (put-bytevector port datum 0 2))
+    (define (write-u8 value)
+      (bytevector-uint-set! datum 0 value (endianness little) 1)
+      (put-bytevector port datum 0 1))
+
+    ;; Write header to port.
+    (write-u8 #x42)
+    (write-u8 #x4D)
+    (write-u32 (+ 14 124 (* (bmp-width bmp) (bmp-height bmp) 4)))
+    (write-u32 0)
+    (write-u32 (+ 14 124))
+
+    ;; Write description to port.
+    (write-u32 124)
+    (write-s32 (bmp-width bmp))
+    (write-s32 (bmp-height bmp))
+    (write-u16 1)
+    (write-u16 32)
+    (write-u32 3)
+    (write-u32 (* (bmp-width bmp) (bmp-height bmp) 4))
+    (write-s32 3780)
+    (write-s32 3780)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 #x00FF0000)
+    (write-u32 #x0000FF00)
+    (write-u32 #x000000FF)
+    (write-u32 #xFF000000)
+    (write-u32 #x73524742)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 2)
+    (write-u32 0)
+    (write-u32 0)
+    (write-u32 0)
+
+    ;; Write pixel data to port.
+    (put-bytevector port (bmp-bytevector bmp))))
