@@ -111,23 +111,17 @@
 			  (read-s32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32)
 			  (list (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32) (read-u32))
 			  (read-u32) (read-u32) (read-u32) #f #f #f #f))
-      (define (read-version-info)
-	(make-description version (read-s32) (read-s32) (read-u16) (read-u16) (read-u32) (read-u32) (read-s32)
-			  (read-s32) (read-u32) (read-u32) #f #f #f #f #f #f #f #f #f #f #f #f #f))
-      (define (read-version-core)
-	(make-description version (read-u16) (read-u16) (read-u16) (read-u16)
-			  0 #f #f #f 0 #f #f #f #f #f #f #f #f #f #f #f #f #f #f))
       (cond (ver5? (read-version-5))
 	    (ver4? (read-version-4))
 	    (ver3? (error 'BMP "BITMAPV3INFOHEADER unsupported."))
 	    (ver2? (error 'BMP "BITMAPV2INFOHEADER unsupported."))
-	    (info? (read-version-info))
+	    (info? (error 'BMP "BITMAPINFOHEADER unsupported."))
 	    (os2x? (error 'BMP "OS22XBITMAPHEADER unsupported."))
-	    (core? (read-version-core))
+	    (core? (error 'BMP "BITMAPCOREHEADER unsupported."))
 	    (else
 	     (error 'BMP "Unsupported BMP verison." version))))
 
-    
+
     (define (read-palette port)
       ;;; Read the color table from the file port.
       ;;;
@@ -203,7 +197,7 @@
       ;;;
       (error 'BMP "RLE4 compression unsupported."))
 
-    
+
     (define (bitfield)
       ;;; Reads bitfield encoded data into a bmp record.
       ;;;
@@ -241,16 +235,40 @@
 		       (error 'BMP "Unsupported pixel bit count." (description-bit-count description))))))
 
 
+    (define (jpeg)
+      ;;; Reads JPEG encoded data into a bmp record.
+      ;;;
+      (error 'BMP "JPEG compression unsupported."))
+
+
+    (define (png)
+      ;;; Reads PNG encoded data into a bmp record.
+      ;;;
+      (error 'BMP "PNG compression unsupported."))
+
+
+    (define (alpha-bitfield)
+      ;;; Reads alpha bitfields encoded data into a bmp record.
+      ;;;
+      (error 'BMP "Alpha bitfield masked data unsupported."))
+
+
     ;; Determine pixel data encoding.
     (define bmpe? (= (description-compression description) 0))
     (define rle8? (= (description-compression description) 1))
     (define rle4? (= (description-compression description) 2))
     (define bitf? (= (description-compression description) 3))
+    (define jpeg? (= (description-compression description) 4))
+    (define pnge? (= (description-compression description) 5))
+    (define abit? (= (description-compression description) 6))
 
     (cond (bmpe? (plain))
 	  (rle8? (run-length-encoding-8))
 	  (rle4? (run-length-encoding-4))
 	  (bitf? (bitfield))
+	  (jpeg? (jpeg))
+	  (pnge? (png))
+	  (abit? (alpha-bitfield))
 	  (else
 	   (error 'BMP "Unsupported compression encoding." (description-compression description)))))
 
